@@ -27,7 +27,9 @@ enum
 
 static inline uint8_t vga_entry_color(uint8_t, uint8_t);
 static inline uint16_t vga_entry(unsigned char, uint8_t);
+
 size_t strlen(const char*);
+
 void term_init(void);
 void term_setentry(char, uint8_t, size_t, size_t);
 void kputchar(char);
@@ -97,12 +99,17 @@ term_setentry(char c, uint8_t color, size_t x, size_t y)
 void
 kputchar(char c)
 {
-	term_setentry(c, term_color, term_col, term_row);
-
-	if(++term_col == VGA_TEXT_WIDTH){
+	if(c == '\n'){
 		term_col = 0;
-		if(++term_row == VGA_TEXT_HEIGHT)
-			term_row = 0;
+		term_row++;
+	} else {
+		term_setentry(c, term_color, term_col, term_row);
+	
+		if(++term_col == VGA_TEXT_WIDTH){
+			term_col = 0;
+			if(++term_row == VGA_TEXT_HEIGHT)
+				term_row = 0;
+		}
 	}
 }
 
@@ -114,13 +121,15 @@ printk(const char* string)
 
 	size = strlen(string);
 
-	for(i = 0; i < size; i++)
+	for(i = 0; i < size; i++) {
 		kputchar(string[i]);
+	}
 }
 
 void 
 kernel_main(void)
 {
 	term_init();
-	printk("asdfsadjkh");
+	printk("asdfsadjkh\n");
+	printk("gfgdsf");
 }

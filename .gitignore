@@ -1,2 +1,8 @@
 *.o
-test
+*.d
+specialk
+.DS_Store
+*.iso
+iso
+sysroot
+

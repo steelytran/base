@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #define VGA_TEXT_WIDTH 80
 #define VGA_TEXT_HEIGHT 25
@@ -28,10 +29,10 @@ enum
 static inline uint8_t vga_entry_color(uint8_t, uint8_t);
 static inline uint16_t vga_entry(unsigned char, uint8_t);
 
-size_t strlen(const char*);
-
 void term_init(void);
 void term_setentry(char, uint8_t, size_t, size_t);
+void term_scroll(void);
+void term_newline(void);
 void kputchar(char);
 void printk(const char*);
 void kernel_main(void);
@@ -57,18 +58,6 @@ vga_entry(unsigned char uc, uint8_t color)
 	return (uint16_t) uc | (uint16_t) color << 8;
 }
 
-size_t
-strlen(const char* str)
-{
-	size_t len;
-
-	len = 0;
-	while(str[len])
-		len++;
-
-	return len;
-}
-
 void
 term_init(void)
 {
@@ -77,7 +66,7 @@ term_init(void)
 
 	term_col = 0;
 	term_row = 0;
-	term_color = vga_entry_color(VGA_WHITE, VGA_BLACK);
+	term_color = vga_entry_color(VGA_YELLOW, VGA_RED);
 
 	for(i = 0; i < VGA_TEXT_HEIGHT; i++){
 		for(j = 0; j < VGA_TEXT_WIDTH; j++){
@@ -97,19 +86,37 @@ term_setentry(char c, uint8_t color, size_t x, size_t y)
 }
 
 void
+term_scroll(void)
+{
+	size_t i, j;
+	size_t offset;
+
+	for(i = 0; i < VGA_TEXT_HEIGHT - 1; i++){
+		for(j = 0; j < VGA_TEXT_WIDTH; j++){
+			offset = i * VGA_TEXT_WIDTH + j;
+			term_buffer[offset] = term_buffer[offset + VGA_TEXT_WIDTH];
+		}
+	}
+}
+
+void
+term_newline(void)
+{
+	term_col = 0;
+	if(term_row+1 == VGA_TEXT_HEIGHT)
+		term_scroll();
+	else term_row++;
+}
+
+void
 kputchar(char c)
 {
-	if(c == '\n'){
-		term_col = 0;
-		term_row++;
-	} else {
+	if(c == '\n')
+		term_newline();
+	else {
 		term_setentry(c, term_color, term_col, term_row);
-	
-		if(++term_col == VGA_TEXT_WIDTH){
-			term_col = 0;
-			if(++term_row == VGA_TEXT_HEIGHT)
-				term_row = 0;
-		}
+		if(++term_col == VGA_TEXT_WIDTH)
+			term_newline();
 	}
 }
 

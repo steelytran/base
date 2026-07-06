@@ -1,0 +1,67 @@
+HOST?=i686-elf
+ARCH?=i386
+
+CFLAGS?=-O2 -g
+LDFLAGS?=
+LIBS?=
+
+DESTDIR?=..
+PREFIX?=/usr/local
+EXEC_PREFIX?=$(PREFIX)
+BOOTDIR?=$(EXEC_PREFIX)/boot
+INCLUDEDIR?=$(PREFIX)/include
+
+CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
+LDFLAGS:=$(LDFLAGS)
+LIBS:=$(LIBS) -nostdlib -lgcc
+
+ARCHDIR=arch/$(ARCH)
+
+include $(ARCHDIR)/make.config
+
+CFLAGS:=$(CFLAGS) $(KERNEL_ARCH_CFLAGS)
+LDFLAGS:=$(LDFLAGS) $(KERNEL_ARCH_LDFLAGS)
+LIBS:=$(LIBS) $(KERNEL_ARCH_LIBS)
+
+KERNEL_OBJS=\
+$(KERNEL_ARCH_OBJS) \
+kernel/kernel.o \
+
+OBJS=\
+$(KERNEL_OBJS) \
+
+LINK_LIST=\
+$(LDFLAGS) \
+$(KERNEL_OBJS) \
+$(LIBS) \
+
+.PHONY: all clean install install-headers install-kernel
+.SUFFIXES: .o .c .S
+
+all: specialk
+
+specialk: $(OBJS) $(ARCHDIR)/linker.ld
+	$(LD) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
+
+.S.o:
+	$(CC) -MD -c $< -o $@ $(CFLAGS)
+
+.c.o:
+	$(CC) -MD -c $< -o $@ -std=gnu99 $(CFLAGS)
+
+clean:
+	rm -f specialk
+	rm -f $(OBJS) *.o */*.o */*/*.o
+	rm -f $(OBJS:.o=.d) *.d */*.d */*/*.d
+
+install: install-headers install-kernel
+
+install-headers:
+	mkdir -p $(DESTDIR)$(INCLUDEDIR)
+	cp -R -p include/. $(DESTDIR)$(INCLUDEDIR)/.
+
+install-kernel: specialk
+	mkdir -p $(DESTDIR)$(BOOTDIR)
+	cp specialk $(DESTDIR)$(BOOTDIR)
+
+-include $(OBJS:.o=.d)

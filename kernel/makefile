@@ -13,7 +13,7 @@ INCLUDEDIR?=$(PREFIX)/include
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
 LDFLAGS:=$(LDFLAGS)
-LIBS:=$(LIBS) -nostdlib -lgcc
+LIBS:=$(LIBS) -nostdlib -lk -lgcc
 
 ARCHDIR=arch/$(ARCH)
 
@@ -41,7 +41,7 @@ $(LIBS) \
 all: specialk
 
 specialk: $(OBJS) $(ARCHDIR)/linker.ld
-	$(LD) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
+	$(CC) -T $(ARCHDIR)/linker.ld -o $@ $(CFLAGS) $(LINK_LIST)
 
 .S.o:
 	$(CC) -MD -c $< -o $@ $(CFLAGS)

@@ -32,7 +32,7 @@ OBJS=\
 $(FREEOBJS) \
 $(HOSTEDOBJS) \
 
-LINK_LIST=$(FREEOBJS:.o=.libk.o)
+LIBK_OBJS=$(FREEOBJS:.o=.libk.o)
 
 BINARIES=libk.a
 
@@ -41,8 +41,8 @@ BINARIES=libk.a
 
 all: $(BINARIES)
 
-libk.a: $(LINK_OBJS)
-	$(AR) rcs $@ $(LINK_OBJS)
+libk.a: $(LIBK_OBJS)
+	$(AR) rcs $@ $(LIBK_OBJS)
 
 .c.o:
 	$(CC) -MD -c $< -o $@ -std=c99 $(CFLAGS)

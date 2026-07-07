@@ -12,7 +12,7 @@ INCLUDEDIR?=$(PREFIX)/include
 LIBDIR?=$(EXEC_PREFIX)/lib
 
 CFLAGS:=$(CFLAGS) -ffreestanding -Wall -Wextra
-LIBK_CFLAGS:=$(CFLAGS)
+LIBK_CFLAGS:=$(CFLAGS) -D__is_libk
 
 ARCHDIR=arch/$(ARCH)
 
@@ -24,6 +24,7 @@ LIBK_CFLAGS:=$(LIBK_CFLAGS) $(KERNEL_ARCH_CFLAGS)
 FREEOBJS=\
 $(ARCH_FREEOBJS) \
 string/strlen.o \
+stdio/putchar.o \
 
 HOSTEDOBJS=\
 $(ARCH_HOSTEDOBJS) \
